@@ -294,6 +294,13 @@ class TelephoneInline(nested_admin.NestedTabularInline):
     can_delete = True
     show_change_link = True
 
+    fk_name = 'user'
+    readonly_fields = ('author','updated_by','date_added','last_edit_date')
+
+    def get_formset(self, *args, **kwargs):
+        print(self)
+
+        return super(TelephoneInline, self).get_formset(*args, **kwargs)
 
 class BankAccountAdmin(admin.ModelAdmin):
     model = BankAccount
@@ -478,12 +485,23 @@ class UserProfileAdmin(ImportExportMixin, RelatedFieldAdmin, AdminAdvancedFilter
         super().get_fieldsets(request, obj)
 
     def save_formset(self, request, form, formset, change):
+        if issubclass(formset.model,Telephone):
+            primary = False
+            for telephone in formset.cleaned_data:
+                if primary == True and telephone['is_primary'] == True:
+                    from django.contrib import messages
+                    messages.error(request, "Something goes wrong sending transaction mail");
+                if telephone['is_primary'] == True:
+                    print('one')
+                    primary = True
+
         if not issubclass(formset.model, DonorPaymentChannel):
             return super().save_formset(request, form, formset, change)
         formset.save()
         for f in formset.forms:
             obj = f.instance
             obj.generate_VS()
+
 
 
 class DonorPaymentChannelResource(ModelResource):

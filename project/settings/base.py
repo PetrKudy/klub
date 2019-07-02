@@ -142,6 +142,7 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'author.middlewares.AuthorDefaultBackendMiddleware'
 )
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None  # To allow more fields in administration
@@ -184,7 +185,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.sessions',
-    'django.contrib.sites',
+    #'django.contrib.sites',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'stdimage',
@@ -217,6 +218,7 @@ INSTALLED_APPS = (
     'nested_admin',
     'smmapdfs',
     'repolinks',
+    'author',
 )
 
 BOWER_INSTALLED_APPS = (

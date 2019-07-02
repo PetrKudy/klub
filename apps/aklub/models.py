@@ -54,8 +54,10 @@ from smmapdfs.models import PdfSandwichType
 import stdimage
 
 from vokativ import vokativ
+from author.decorators import with_author
 
 from . import autocom
+
 
 logger = logging.getLogger(__name__)
 
@@ -718,7 +720,7 @@ class UserProfile(AbstractUser):
     get_main_telephone.short_description = _("Telephone")
     get_main_telephone.admin_order_field = "telephone"
 
-
+@with_author
 class Telephone(models.Model):
     bool_choices = (
         (None, "No"),
@@ -739,7 +741,7 @@ class Telephone(models.Model):
     is_primary = models.NullBooleanField(
         verbose_name=_("Primary phone"),
         blank=True,
-        default=None,
+        default=True,
         choices=bool_choices,
     )
     note = models.CharField(
@@ -747,6 +749,14 @@ class Telephone(models.Model):
         help_text=_("e.g. do not call during a workweek"),
         max_length=70,
         blank=True,
+    )
+    date_added = models.DateTimeField(
+        auto_now_add=True,
+        blank=True
+    )
+    last_edit_date = models.DateTimeField(
+        auto_now=True,
+        blank=True
     )
     user = models.ForeignKey(
         UserProfile,
@@ -758,10 +768,12 @@ class Telephone(models.Model):
     class Meta:
         verbose_name = _("Telephone")
         verbose_name_plural = _("Telephones")
-        unique_together = ("user", "is_primary")
-
-    def validate_unique(self, exclude=None):
+        #unique_together = ("user", "is_primary") # need delete because not possible to change !!pozor migrace!!
+        '''
+    def validate_unique(self,*args, **kwargs, exclude=None):
+        print('unique')
         super().validate_unique(exclude=exclude)
+        '''
 
     def check_duplicate(self, *args, **kwargs):
         qs = Telephone.objects.filter(telephone=self.telephone, user=self.user)
@@ -769,15 +781,24 @@ class Telephone(models.Model):
             if qs.filter(telephone=self.telephone, user=self.user).exists():
                 raise ValidationError("Duplicate phone number for this user")
 
-    def clean(self, *args, **kwargs):
-        self.check_duplicate()
+    def check_primary(self, *args, **kwargs):
         primary = Telephone.objects.filter(is_primary=True, user=self.user)
-        primary.is_primary = None
-        primary.user = self.user
-        self.validate_unique()
+        print(primary)
+
+    def clean(self, *args, **kwargs): # vyhodi chybu když data not ok
+        self.check_duplicate()
+        self.check_primary()
+        print(kwargs)
+
+        #primary = Telephone.objects.filter(is_primary=True, user=self.user)
+        #print(primary)
+        #primary.is_primary = None
+        #primary.user = self.user
+        #self.validate_unique()
         super().clean(*args, **kwargs)
 
     def save(self, *args, **kwargs):
+        print('save')
         self.clean()
         super().save(*args, **kwargs)
 
