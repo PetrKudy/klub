@@ -412,12 +412,6 @@ class UserProfileMergeForm(merge.MergeForm):
         fields = '__all__'
 
 
-class PreferenceInlineForm(forms.ModelForm):
-    class Meta:
-        model = Preference
-        fields = '__all__'
-
-
 class PreferenceInline(nested_admin.NestedStackedInline):
     model = Preference
     max_num = 0
@@ -425,8 +419,9 @@ class PreferenceInline(nested_admin.NestedStackedInline):
     can_delete = False
     fieldsets = (
         (None, {
+            'classes': ('wide',),
             'fields': (
-                'public', 'send_mailing_lists',
+                ('public', 'send_mailing_lists'),
                 ('newsletter_on', 'call_on'),
                 ('challenge_on', 'letter_on'),
             ),
@@ -504,12 +499,6 @@ class UnitUserAddForm(forms.ModelForm):
             'correspondence_zip_code',
             'addressment',
             'addressment_on_envelope',
-            'public',
-            'send_mailing_lists',
-            'newsletter_on',
-            'letter_on',
-            'call_on',
-            'challenge_on',
         )
         field_classes = {'username': UsernameField}
 
@@ -661,13 +650,6 @@ class UserProfileAdmin(
 
              ),
          }),
-        ('Preferences', {
-            'fields': (
-                ('public', 'send_mailing_lists', ),
-                ('newsletter_on', 'call_on', ),
-                ('challenge_on', 'letter_on', ),
-            ),
-        })
     )
 
     superuser_fieldsets = (
