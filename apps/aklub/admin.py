@@ -1383,11 +1383,48 @@ class NewUserAdmin(DonorPaymethChannelAdmin):
     )
 
 
+class InteractionLoaderClass(BaseInstanceLoader):
+    def get_instance(self, row):
+        user = None
+        if row.get('email'):
+            try:
+                user = ProfileEmail.objects.get(email=row['email']).user
+            except ProfileEmail.DoesNotExist:
+                pass
+        if row.get('user') and not user:
+            try:
+                user = Profile.objects.get(username=row['user'])
+            except Profile.DoesNotExist:
+                pass
+        return user
+
+
+class InteractionResource(ModelResource):
+    email = fields.Field()
+
+    class Meta:
+        model = Interaction
+        fields = ('email', 'user', 'event', 'date', 'created', 'updated', 'method',
+                  'type', 'subject', 'summary', 'attachment', 'note', 'created_by',
+                  'handled_by', 'result', 'send', 'dispatched', 'administrative_unit',
+                  )
+        import_id_fields = ('user',)
+        instance_loader_class = InteractionLoaderClass
+        clean_model_instances = True
+
+        def import_obj(self, obj, data, dry_run):
+
+            return obj
+
+
 class InteractionAdmin(
+    ImportExportMixin,
     unit_admin_mixin_generator('user__administrative_units'),
     RelatedFieldAdmin,
     admin.ModelAdmin,
 ):
+    resource_class = InteractionResource
+
     list_display = (
         'subject',
         'dispatched',
